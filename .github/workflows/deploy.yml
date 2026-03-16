@@ -1,0 +1,26 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lab-booking-system/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: lab-booking-system/backend
+        run: npm ci
+
+      - name: Trigger Render deploy
+        run: curl -f "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
