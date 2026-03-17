@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faculty Dashboard - LabBook</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="icon">🔬</div>
+        <span>LabBook</span>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-info">
+        <div class="user-avatar" id="avatar">F</div>
+        <div>
+          <div class="name" id="user-name">Faculty</div>
+          <span class="role">Faculty</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Menu</div>
+      <button class="nav-item active" onclick="showSection('dashboard')">
+        <span class="nav-icon">🏠</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="showSection('all-bookings')">
+        <span class="nav-icon">📋</span> All Bookings
+      </button>
+      <button class="nav-item" onclick="showSection('equipment')">
+        <span class="nav-icon">🔧</span> Equipment
+      </button>
+      <button class="nav-item" onclick="showSection('my-bookings')">
+        <span class="nav-icon">📌</span> My Bookings
+      </button>
+      <button class="nav-item" onclick="showSection('profile')">
+        <span class="nav-icon">👤</span> Profile
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="logout()">
+        <span class="nav-icon">🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <span id="topbar-user" style="font-size:14px;color:var(--text-muted)"></span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Dashboard -->
+      <div class="section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">📋</div>
+            <div class="stat-info"><div class="value" id="s-total">0</div><div class="label">Total Bookings</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow">⏳</div>
+            <div class="stat-info"><div class="value" id="s-pending">0</div><div class="label">Pending Approval</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-info"><div class="value" id="s-approved">0</div><div class="label">Approved</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon cyan">🔧</div>
+            <div class="stat-info"><div class="value" id="s-equipment">0</div><div class="label">Equipment Items</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Pending Approvals</span>
+            <span class="badge badge-pending" id="pending-count">0 pending</span>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Student</th><th>Equipment</th><th>Date</th><th>Time</th><th>Purpose</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="pending-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Bookings -->
+      <div class="section" id="section-all-bookings">
+        <div class="search-bar">
+          <input class="search-input" id="b-search" placeholder="🔍 Search bookings..." oninput="filterBookings()" />
+          <select class="search-input" style="flex:0;min-width:150px" id="b-status" onchange="filterBookings()">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">All Bookings</span></div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Student</th><th>Equipment</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="all-bookings-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipment -->
+      <div class="section" id="section-equipment">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Lab Equipment</span>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>Name</th><th>Category</th><th>Location</th><th>Total</th><th>Available</th></tr>
+                </thead>
+                <tbody id="eq-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Bookings -->
+      <div class="section" id="section-my-bookings">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">My Bookings</span>
+            <button class="btn btn-outline btn-sm" onclick="showSection('equipment')">+ Book Equipment</button>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Equipment</th><th>Date</th><th>Time</th><th>Status</th><th>Remarks</th></tr>
+                </thead>
+                <tbody id="my-bookings-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile -->
+      <div class="section" id="section-profile">
+        <div class="card" style="max-width:500px">
+          <div class="card-header"><span class="card-title">My Profile</span></div>
+          <div class="card-body" id="profile-body"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Remarks Modal -->
+<div class="modal-overlay hidden" id="remarks-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="remarks-title">Review Booking</h2>
+      <button class="modal-close" onclick="closeRemarksModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Remarks (optional)</label>
+        <textarea id="remarks-text" rows="3" placeholder="Add remarks for the student..."></textarea>
+      </div>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-success" style="flex:1" onclick="submitStatus('approved')">✅ Approve</button>
+        <button class="btn btn-danger" style="flex:1" onclick="submitStatus('rejected')">❌ Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = window.location.origin + '/api';
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  if (!token || !user || user.role !== 'faculty') window.location.href = 'index.html';
+
+  document.getElementById('user-name').textContent = user.name;
+  document.getElementById('avatar').textContent = user.name[0].toUpperCase();
+  document.getElementById('topbar-user').textContent = `Welcome, ${user.name}`;
+
+  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+  let allBookings = [];
+  let reviewingId = null;
+
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`section-${name}`).classList.add('active');
+    const titles = { dashboard: 'Dashboard', 'all-bookings': 'All Bookings', equipment: 'Equipment', 'my-bookings': 'My Bookings', profile: 'Profile' };
+    document.getElementById('page-title').textContent = titles[name] || name;
+    if (name === 'dashboard') loadDashboard();
+    if (name === 'all-bookings') loadAllBookings();
+    if (name === 'equipment') loadEquipment();
+    if (name === 'my-bookings') loadMyBookings();
+    if (name === 'profile') loadProfile();
+  }
+
+  async function loadDashboard() {
+    const [statsRes, bookingsRes] = await Promise.all([
+      fetch(`${API}/bookings/stats/summary`, { headers }),
+      fetch(`${API}/bookings`, { headers })
+    ]);
+    const stats = await statsRes.json();
+    const bookings = await bookingsRes.json();
+
+    document.getElementById('s-total').textContent = stats.total;
+    document.getElementById('s-pending').textContent = stats.pending;
+    document.getElementById('s-approved').textContent = stats.approved;
+    document.getElementById('s-equipment').textContent = stats.totalEquipment;
+    document.getElementById('pending-count').textContent = `${stats.pending} pending`;
+
+    const pending = bookings.filter(b => b.status === 'pending');
+    const tbody = document.getElementById('pending-tbody');
+    tbody.innerHTML = pending.length ? pending.map(b => `
+      <tr>
+        <td><strong>${b.user_name}</strong><br><small style="color:var(--text-muted)">${b.roll_number || b.user_email}</small></td>
+        <td>${b.equipment_name} <span class="cat-badge">${b.category}</span></td>
+        <td>${b.booking_date}</td>
+        <td>${b.start_time} - ${b.end_time}</td>
+        <td style="font-size:13px">${b.purpose || '-'}</td>
+        <td class="actions">
+          <button class="btn btn-success btn-sm" onclick="openRemarks(${b.id})">Review</button>
+        </td>
+      </tr>
+    `).join('') : `<tr><td colspan="6"><div class="empty-state"><div class="icon">🎉</div><p>No pending approvals</p></div></td></tr>`;
+  }
+
+  async function loadAllBookings() {
+    const res = await fetch(`${API}/bookings`, { headers });
+    allBookings = await res.json();
+    renderAllBookings(allBookings);
+  }
+
+  function renderAllBookings(list) {
+    const tbody = document.getElementById('all-bookings-tbody');
+    tbody.innerHTML = list.length ? list.map((b, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${b.user_name}</strong><br><small style="color:var(--text-muted)">${b.roll_number || ''}</small></td>
+        <td>${b.equipment_name}</td>
+        <td>${b.booking_date}</td>
+        <td>${b.start_time} - ${b.end_time}</td>
+        <td><span class="badge badge-${b.status}">${b.status}</span></td>
+        <td class="actions">
+          ${b.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="openRemarks(${b.id})">Review</button>` : ''}
+          ${b.status === 'approved' ? `<button class="btn btn-warning btn-sm" onclick="markComplete(${b.id})">Complete</button>` : ''}
+        </td>
+      </tr>
+    `).join('') : `<tr><td colspan="7"><div class="empty-state"><div class="icon">📋</div><p>No bookings found</p></div></td></tr>`;
+  }
+
+  function filterBookings() {
+    const q = document.getElementById('b-search').value.toLowerCase();
+    const status = document.getElementById('b-status').value;
+    renderAllBookings(allBookings.filter(b =>
+      (!q || b.user_name.toLowerCase().includes(q) || b.equipment_name.toLowerCase().includes(q)) &&
+      (!status || b.status === status)
+    ));
+  }
+
+  async function loadEquipment() {
+    const res = await fetch(`${API}/equipment`, { headers });
+    const list = await res.json();
+    document.getElementById('eq-tbody').innerHTML = list.map(e => `
+      <tr>
+        <td><strong>${e.name}</strong></td>
+        <td><span class="cat-badge">${e.category}</span></td>
+        <td>📍 ${e.lab_location}</td>
+        <td>${e.quantity}</td>
+        <td><span class="availability ${e.available > 0 ? 'available' : 'unavailable'}">${e.available}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  async function loadMyBookings() {
+    const res = await fetch(`${API}/bookings`, { headers });
+    const all = await res.json();
+    const mine = all.filter(b => b.user_email === user.email);
+    document.getElementById('my-bookings-tbody').innerHTML = mine.length ? mine.map((b, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${b.equipment_name}</td>
+        <td>${b.booking_date}</td>
+        <td>${b.start_time} - ${b.end_time}</td>
+        <td><span class="badge badge-${b.status}">${b.status}</span></td>
+        <td style="font-size:12px">${b.remarks || '-'}</td>
+      </tr>
+    `).join('') : `<tr><td colspan="6"><div class="empty-state"><div class="icon">📌</div><p>No bookings yet</p></div></td></tr>`;
+  }
+
+  function openRemarks(id) {
+    reviewingId = id;
+    document.getElementById('remarks-text').value = '';
+    document.getElementById('remarks-modal').classList.remove('hidden');
+  }
+
+  function closeRemarksModal() {
+    document.getElementById('remarks-modal').classList.add('hidden');
+    reviewingId = null;
+  }
+
+  async function submitStatus(status) {
+    const remarks = document.getElementById('remarks-text').value;
+    const res = await fetch(`${API}/bookings/${reviewingId}/status`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ status, remarks })
+    });
+    const data = await res.json();
+    alert(data.message || data.error);
+    closeRemarksModal();
+    loadDashboard();
+    if (document.getElementById('section-all-bookings').classList.contains('active')) loadAllBookings();
+  }
+
+  async function markComplete(id) {
+    if (!confirm('Mark this booking as completed?')) return;
+    const res = await fetch(`${API}/bookings/${id}/status`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ status: 'completed', remarks: 'Marked complete by faculty' })
+    });
+    const data = await res.json();
+    alert(data.message || data.error);
+    loadAllBookings();
+  }
+
+  async function loadProfile() {
+    const res = await fetch(`${API}/auth/me`, { headers });
+    const u = await res.json();
+    document.getElementById('profile-body').innerHTML = `
+      <div style="text-align:center;margin-bottom:24px">
+        <div class="user-avatar" style="width:80px;height:80px;font-size:32px;margin:0 auto 12px">${u.name[0]}</div>
+        <h2 style="font-size:20px">${u.name}</h2>
+        <p style="color:var(--text-muted)">${u.email}</p>
+      </div>
+      <div style="display:grid;gap:12px">
+        ${[['Role', u.role], ['Department', u.department || '-'], ['Member Since', u.created_at?.split('T')[0]]]
+          .map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg);border-radius:8px">
+            <span style="color:var(--text-muted);font-size:13px">${k}</span>
+            <span style="font-weight:600;font-size:13px;text-transform:capitalize">${v}</span>
+          </div>`).join('')}
+      </div>
+    `;
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+  loadDashboard();
+</script>
+</body>
+</html>

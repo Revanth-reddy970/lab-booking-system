@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab Equipment Booking System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-container">
+      <div class="login-logo">
+        <div class="icon">🔬</div>
+        <h1>LabBook</h1>
+        <p>College Lab Equipment Booking System</p>
+      </div>
+
+      <!-- Role Tabs -->
+      <div class="role-tabs">
+        <button class="role-tab active" onclick="setRole('student')">🎓 Student</button>
+        <button class="role-tab" onclick="setRole('faculty')">👨‍🏫 Faculty</button>
+        <button class="role-tab" onclick="setRole('admin')">⚙️ Admin</button>
+      </div>
+
+      <div id="alert-box"></div>
+
+      <!-- Login Form -->
+      <div id="login-form">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="Enter your email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Enter your password" />
+        </div>
+        <button class="btn btn-primary" onclick="login()">Sign In →</button>
+        <div class="login-footer" id="register-link">
+          Don't have an account? <a href="#" onclick="showRegister()">Register here</a>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="hidden">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="Your full name" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="Email address" />
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" id="reg-dept" placeholder="e.g. Computer Science" />
+          </div>
+        </div>
+        <div id="roll-field" class="form-group">
+          <label>Roll Number</label>
+          <input type="text" id="reg-roll" placeholder="e.g. CS2021001" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Create a password" />
+        </div>
+        <button class="btn btn-primary" onclick="register()">Create Account →</button>
+        <div class="login-footer">
+          Already have an account? <a href="#" onclick="showLogin()">Sign in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin + '/api';
+    let currentRole = 'student';
+
+    function setRole(role) {
+      currentRole = role;
+      document.querySelectorAll('.role-tab').forEach((t, i) => {
+        t.classList.toggle('active', ['student','faculty','admin'][i] === role);
+      });
+      document.getElementById('roll-field').classList.toggle('hidden', role !== 'student');
+      clearAlert();
+    }
+
+    function showAlert(msg, type = 'error') {
+      document.getElementById('alert-box').innerHTML =
+        `<div class="alert alert-${type}">${type === 'error' ? '⚠️' : '✅'} ${msg}</div>`;
+    }
+
+    function clearAlert() {
+      document.getElementById('alert-box').innerHTML = '';
+    }
+
+    function showRegister() {
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('register-form').classList.remove('hidden');
+      clearAlert();
+    }
+
+    function showLogin() {
+      document.getElementById('register-form').classList.add('hidden');
+      document.getElementById('login-form').classList.remove('hidden');
+      clearAlert();
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) return showAlert('Please fill in all fields');
+
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) return showAlert(data.error);
+
+        if (data.user.role !== currentRole)
+          return showAlert(`This account is registered as ${data.user.role}, not ${currentRole}`);
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        const pages = { student: 'student.html', faculty: 'faculty.html', admin: 'admin.html' };
+        window.location.href = pages[data.user.role];
+      } catch {
+        showAlert('Cannot connect to server. Make sure the backend is running.');
+      }
+    }
+
+    async function register() {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const dept = document.getElementById('reg-dept').value.trim();
+      const roll = document.getElementById('reg-roll').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (!name || !email || !password) return showAlert('Please fill required fields');
+
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role: currentRole, department: dept, roll_number: roll })
+        });
+        const data = await res.json();
+        if (!res.ok) return showAlert(data.error);
+        showAlert('Account created! Please sign in.', 'success');
+        setTimeout(showLogin, 1500);
+      } catch {
+        showAlert('Cannot connect to server.');
+      }
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (!document.getElementById('login-form').classList.contains('hidden')) login();
+        else register();
+      }
+    });
+
+    // Redirect if already logged in
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (user) {
+      const pages = { student: 'student.html', faculty: 'faculty.html', admin: 'admin.html' };
+      if (pages[user.role]) window.location.href = pages[user.role];
+    }
+  </script>
+</body>
+</html>

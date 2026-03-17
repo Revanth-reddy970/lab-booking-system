@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - LabBook</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="dashboard">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="icon">🔬</div>
+        <span>LabBook</span>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-info">
+        <div class="user-avatar" id="avatar">A</div>
+        <div>
+          <div class="name" id="user-name">Admin</div>
+          <span class="role">Admin</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Overview</div>
+      <button class="nav-item active" onclick="showSection('dashboard')">
+        <span class="nav-icon">🏠</span> Dashboard
+      </button>
+      <div class="nav-section-title">Management</div>
+      <button class="nav-item" onclick="showSection('bookings')">
+        <span class="nav-icon">📋</span> All Bookings
+      </button>
+      <button class="nav-item" onclick="showSection('equipment')">
+        <span class="nav-icon">🔧</span> Equipment
+      </button>
+      <button class="nav-item" onclick="showSection('users')">
+        <span class="nav-icon">👥</span> Users
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="logout()">
+        <span class="nav-icon">🚪</span> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Admin Dashboard</div>
+      <div class="topbar-right">
+        <span style="font-size:13px;background:#ede9fe;color:#5b21b6;padding:4px 12px;border-radius:20px;font-weight:600">⚙️ Admin Panel</span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Dashboard -->
+      <div class="section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">📋</div>
+            <div class="stat-info"><div class="value" id="s-total">0</div><div class="label">Total Bookings</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow">⏳</div>
+            <div class="stat-info"><div class="value" id="s-pending">0</div><div class="label">Pending</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-info"><div class="value" id="s-approved">0</div><div class="label">Approved</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">❌</div>
+            <div class="stat-info"><div class="value" id="s-rejected">0</div><div class="label">Rejected</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon cyan">🔧</div>
+            <div class="stat-info"><div class="value" id="s-equipment">0</div><div class="label">Equipment</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">👥</div>
+            <div class="stat-info"><div class="value" id="s-users">0</div><div class="label">Users</div></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Recent Bookings</span></div>
+            <div class="card-body">
+              <div class="table-wrapper">
+                <table>
+                  <thead><tr><th>User</th><th>Equipment</th><th>Status</th></tr></thead>
+                  <tbody id="recent-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Booking Status Overview</span></div>
+            <div class="card-body" id="chart-body" style="padding:16px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Bookings -->
+      <div class="section" id="section-bookings">
+        <div class="search-bar">
+          <input class="search-input" id="b-search" placeholder="🔍 Search..." oninput="filterBookings()" />
+          <select class="search-input" style="flex:0;min-width:150px" id="b-status" onchange="filterBookings()">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Bookings</span>
+            <span id="booking-count" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>#</th><th>User</th><th>Equipment</th><th>Date</th><th>Time</th><th>Status</th><th>Approved By</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="bookings-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipment Management -->
+      <div class="section" id="section-equipment">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <span class="card-title">Add New Equipment</span>
+          </div>
+          <div class="card-body">
+            <div id="eq-alert"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Equipment Name *</label>
+                <input type="text" id="eq-name" placeholder="e.g. Oscilloscope" />
+              </div>
+              <div class="form-group">
+                <label>Category *</label>
+                <input type="text" id="eq-cat" placeholder="e.g. Electronics" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="eq-qty" value="1" min="1" />
+              </div>
+              <div class="form-group">
+                <label>Lab Location</label>
+                <input type="text" id="eq-loc" placeholder="e.g. Lab 101" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="eq-desc" rows="2" placeholder="Brief description..."></textarea>
+            </div>
+            <button class="btn btn-primary" style="width:auto;padding:12px 32px" onclick="addEquipment()">+ Add Equipment</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Equipment List</span></div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Name</th><th>Category</th><th>Location</th><th>Total</th><th>Available</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="eq-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div class="section" id="section-users">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Registered Users</span></div>
+          <div class="card-body">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Roll No.</th><th>Joined</th></tr>
+                </thead>
+                <tbody id="users-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Edit Equipment Modal -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Edit Equipment</h2>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id" />
+      <div class="form-row">
+        <div class="form-group"><label>Name</label><input type="text" id="edit-name" /></div>
+        <div class="form-group"><label>Category</label><input type="text" id="edit-cat" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Total Quantity</label><input type="number" id="edit-qty" min="0" /></div>
+        <div class="form-group"><label>Available</label><input type="number" id="edit-avail" min="0" /></div>
+      </div>
+      <div class="form-group"><label>Location</label><input type="text" id="edit-loc" /></div>
+      <div class="form-group"><label>Description</label><textarea id="edit-desc" rows="2"></textarea></div>
+      <button class="btn btn-primary" onclick="saveEquipment()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = window.location.origin + '/api';
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+  if (!token || !user || user.role !== 'admin') window.location.href = 'index.html';
+
+  document.getElementById('user-name').textContent = user.name;
+  document.getElementById('avatar').textContent = user.name[0].toUpperCase();
+
+  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+  let allBookings = [];
+
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`section-${name}`).classList.add('active');
+    const titles = { dashboard: 'Admin Dashboard', bookings: 'All Bookings', equipment: 'Equipment Management', users: 'User Management' };
+    document.getElementById('page-title').textContent = titles[name] || name;
+    if (name === 'dashboard') loadDashboard();
+    if (name === 'bookings') loadBookings();
+    if (name === 'equipment') loadEquipment();
+    if (name === 'users') loadUsers();
+  }
+
+  async function loadDashboard() {
+    const [statsRes, bookingsRes] = await Promise.all([
+      fetch(`${API}/bookings/stats/summary`, { headers }),
+      fetch(`${API}/bookings`, { headers })
+    ]);
+    const stats = await statsRes.json();
+    const bookings = await bookingsRes.json();
+
+    document.getElementById('s-total').textContent = stats.total;
+    document.getElementById('s-pending').textContent = stats.pending;
+    document.getElementById('s-approved').textContent = stats.approved;
+    document.getElementById('s-rejected').textContent = stats.rejected;
+    document.getElementById('s-equipment').textContent = stats.totalEquipment;
+    document.getElementById('s-users').textContent = stats.totalUsers;
+
+    // Recent bookings
+    document.getElementById('recent-tbody').innerHTML = bookings.slice(0, 6).map(b => `
+      <tr>
+        <td><strong>${b.user_name}</strong><br><small style="color:var(--text-muted)">${b.user_email}</small></td>
+        <td>${b.equipment_name}</td>
+        <td><span class="badge badge-${b.status}">${b.status}</span></td>
+      </tr>
+    `).join('');
+
+    // Simple bar chart
+    const total = stats.total || 1;
+    const bars = [
+      { label: 'Pending', count: stats.pending, color: '#f59e0b' },
+      { label: 'Approved', count: stats.approved, color: '#10b981' },
+      { label: 'Rejected', count: stats.rejected, color: '#ef4444' },
+      { label: 'Completed', count: stats.completed, color: '#4f46e5' },
+    ];
+    document.getElementById('chart-body').innerHTML = bars.map(b => `
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span style="font-weight:600">${b.label}</span>
+          <span style="color:var(--text-muted)">${b.count}</span>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;height:10px;overflow:hidden">
+          <div style="width:${Math.round((b.count/total)*100)}%;height:100%;background:${b.color};border-radius:8px;transition:width .5s"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function loadBookings() {
+    const res = await fetch(`${API}/bookings`, { headers });
+    allBookings = await res.json();
+    document.getElementById('booking-count').textContent = `${allBookings.length} total`;
+    renderBookings(allBookings);
+  }
+
+  function renderBookings(list) {
+    document.getElementById('bookings-tbody').innerHTML = list.length ? list.map((b, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${b.user_name}</strong><br><small style="color:var(--text-muted)">${b.roll_number || b.user_email}</small></td>
+        <td>${b.equipment_name} <span class="cat-badge">${b.category}</span></td>
+        <td>${b.booking_date}</td>
+        <td>${b.start_time} - ${b.end_time}</td>
+        <td><span class="badge badge-${b.status}">${b.status}</span></td>
+        <td style="font-size:13px">${b.approved_by_name || '-'}</td>
+        <td class="actions">
+          ${b.status === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="updateStatus(${b.id},'approved')">✅</button>
+            <button class="btn btn-danger btn-sm" onclick="updateStatus(${b.id},'rejected')">❌</button>
+          ` : ''}
+          ${b.status === 'approved' ? `<button class="btn btn-warning btn-sm" onclick="updateStatus(${b.id},'completed')">Done</button>` : ''}
+        </td>
+      </tr>
+    `).join('') : `<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No bookings</p></div></td></tr>`;
+  }
+
+  function filterBookings() {
+    const q = document.getElementById('b-search').value.toLowerCase();
+    const status = document.getElementById('b-status').value;
+    renderBookings(allBookings.filter(b =>
+      (!q || b.user_name.toLowerCase().includes(q) || b.equipment_name.toLowerCase().includes(q)) &&
+      (!status || b.status === status)
+    ));
+  }
+
+  async function updateStatus(id, status) {
+    const remarks = status === 'rejected' ? prompt('Reason for rejection (optional):') : '';
+    const res = await fetch(`${API}/bookings/${id}/status`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ status, remarks: remarks || '' })
+    });
+    const data = await res.json();
+    alert(data.message || data.error);
+    loadBookings();
+  }
+
+  async function loadEquipment() {
+    const res = await fetch(`${API}/equipment`, { headers });
+    const list = await res.json();
+    document.getElementById('eq-tbody').innerHTML = list.map((e, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${e.name}</strong></td>
+        <td><span class="cat-badge">${e.category}</span></td>
+        <td>📍 ${e.lab_location}</td>
+        <td>${e.quantity}</td>
+        <td><span class="availability ${e.available > 0 ? 'available' : 'unavailable'}">${e.available}</span></td>
+        <td class="actions">
+          <button class="btn btn-outline btn-sm" onclick="openEdit(${JSON.stringify(e).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEquipment(${e.id})">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function addEquipment() {
+    const name = document.getElementById('eq-name').value.trim();
+    const category = document.getElementById('eq-cat').value.trim();
+    const quantity = parseInt(document.getElementById('eq-qty').value) || 1;
+    const lab_location = document.getElementById('eq-loc').value.trim();
+    const description = document.getElementById('eq-desc').value.trim();
+
+    if (!name || !category) return document.getElementById('eq-alert').innerHTML =
+      '<div class="alert alert-error">⚠️ Name and category are required</div>';
+
+    const res = await fetch(`${API}/equipment`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ name, category, quantity, lab_location, description })
+    });
+    const data = await res.json();
+    if (!res.ok) return document.getElementById('eq-alert').innerHTML =
+      `<div class="alert alert-error">⚠️ ${data.error}</div>`;
+
+    document.getElementById('eq-alert').innerHTML = '<div class="alert alert-success">✅ Equipment added!</div>';
+    ['eq-name','eq-cat','eq-loc','eq-desc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('eq-qty').value = '1';
+    loadEquipment();
+  }
+
+  function openEdit(eq) {
+    document.getElementById('edit-id').value = eq.id;
+    document.getElementById('edit-name').value = eq.name;
+    document.getElementById('edit-cat').value = eq.category;
+    document.getElementById('edit-qty').value = eq.quantity;
+    document.getElementById('edit-avail').value = eq.available;
+    document.getElementById('edit-loc').value = eq.lab_location;
+    document.getElementById('edit-desc').value = eq.description || '';
+    document.getElementById('edit-modal').classList.remove('hidden');
+  }
+
+  function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+
+  async function saveEquipment() {
+    const id = document.getElementById('edit-id').value;
+    const body = {
+      name: document.getElementById('edit-name').value,
+      category: document.getElementById('edit-cat').value,
+      quantity: parseInt(document.getElementById('edit-qty').value),
+      available: parseInt(document.getElementById('edit-avail').value),
+      lab_location: document.getElementById('edit-loc').value,
+      description: document.getElementById('edit-desc').value
+    };
+    const res = await fetch(`${API}/equipment/${id}`, { method: 'PUT', headers, body: JSON.stringify(body) });
+    const data = await res.json();
+    alert(data.message || data.error);
+    closeEditModal();
+    loadEquipment();
+  }
+
+  async function deleteEquipment(id) {
+    if (!confirm('Delete this equipment? This cannot be undone.')) return;
+    const res = await fetch(`${API}/equipment/${id}`, { method: 'DELETE', headers });
+    const data = await res.json();
+    alert(data.message || data.error);
+    loadEquipment();
+  }
+
+  async function loadUsers() {
+    // Fetch all bookings to get user info (no dedicated users endpoint needed)
+    const res = await fetch(`${API}/bookings`, { headers });
+    const bookings = await res.json();
+    const meRes = await fetch(`${API}/auth/me`, { headers });
+    const me = await meRes.json();
+
+    // Collect unique users from bookings + current admin
+    const usersMap = new Map();
+    usersMap.set(me.id, me);
+    bookings.forEach(b => {
+      if (!usersMap.has(b.user_id)) {
+        usersMap.set(b.user_id, {
+          id: b.user_id, name: b.user_name, email: b.user_email,
+          roll_number: b.roll_number, role: 'student'
+        });
+      }
+    });
+
+    const users = [...usersMap.values()];
+    document.getElementById('users-tbody').innerHTML = users.length ? users.map((u, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="user-avatar" style="width:32px;height:32px;font-size:13px;background:linear-gradient(135deg,var(--primary),var(--secondary))">${u.name?.[0] || '?'}</div>
+            <strong>${u.name}</strong>
+          </div>
+        </td>
+        <td>${u.email}</td>
+        <td><span class="badge ${u.role === 'admin' ? 'badge-completed' : u.role === 'faculty' ? 'badge-approved' : 'badge-pending'}">${u.role}</span></td>
+        <td>${u.department || '-'}</td>
+        <td>${u.roll_number || '-'}</td>
+        <td>${u.created_at?.split('T')[0] || '-'}</td>
+      </tr>
+    `).join('') : `<tr><td colspan="7"><div class="empty-state"><div class="icon">👥</div><p>No users found</p></div></td></tr>`;
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+  loadDashboard();
+</script>
+</body>
+</html>
