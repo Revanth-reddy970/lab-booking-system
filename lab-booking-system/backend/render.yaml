@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: lab-booking-system
+    runtime: node
+    rootDir: lab-booking-system/backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: /data/lab_booking.db
+    disk:
+      name: lab-db
+      mountPath: /data
+      sizeGB: 1
