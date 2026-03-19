@@ -40,7 +40,9 @@ function lastId() {
 }
 
 async function init() {
-  const SQL = await initSqlJs();
+  const SQL = await initSqlJs({
+    locateFile: file => path.join(__dirname, 'node_modules/sql.js/dist/', file)
+  });
   if (fs.existsSync(DB_PATH)) {
     db = new SQL.Database(fs.readFileSync(DB_PATH));
   } else {
